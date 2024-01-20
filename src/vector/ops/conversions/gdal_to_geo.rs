@@ -1,4 +1,5 @@
 use std::convert::{TryFrom, TryInto};
+use abi_stable::std_types::RVec;
 
 use gdal_sys::{self, OGRwkbGeometryType};
 
@@ -38,7 +39,7 @@ impl TryFrom<&Geometry> for geo_types::Geometry<f64> {
                                 _ => panic!("Expected to get a Point"),
                             })
                     })
-                    .collect::<Result<Vec<_>, _>>()?;
+                    .collect::<Result<RVec<_>, _>>()?;
                 Ok(geo_types::Geometry::MultiPoint(geo_types::MultiPoint(
                     coords,
                 )))
@@ -65,7 +66,7 @@ impl TryFrom<&Geometry> for geo_types::Geometry<f64> {
                                 _ => panic!("Expected to get a LineString"),
                             })
                     })
-                    .collect::<Result<Vec<_>, _>>()?;
+                    .collect::<Result<RVec<_>, _>>()?;
                 Ok(geo_types::Geometry::MultiLineString(
                     geo_types::MultiLineString(strings),
                 ))
@@ -74,7 +75,7 @@ impl TryFrom<&Geometry> for geo_types::Geometry<f64> {
                 let ring_count =
                     unsafe { gdal_sys::OGR_G_GetGeometryCount(geo.c_geometry()) } as usize;
                 let outer = ring(0)?;
-                let holes = (1..ring_count).map(ring).collect::<Result<Vec<_>, _>>()?;
+                let holes = (1..ring_count).map(ring).collect::<Result<RVec<_>, _>>()?;
                 Ok(geo_types::Geometry::Polygon(geo_types::Polygon::new(
                     outer, holes,
                 )))
@@ -91,7 +92,7 @@ impl TryFrom<&Geometry> for geo_types::Geometry<f64> {
                                 _ => panic!("Expected to get a Polygon"),
                             })
                     })
-                    .collect::<Result<Vec<_>, _>>()?;
+                    .collect::<Result<RVec<_>, _>>()?;
                 Ok(geo_types::Geometry::MultiPolygon(geo_types::MultiPolygon(
                     strings,
                 )))
@@ -101,7 +102,7 @@ impl TryFrom<&Geometry> for geo_types::Geometry<f64> {
                     unsafe { gdal_sys::OGR_G_GetGeometryCount(geo.c_geometry()) } as usize;
                 let geometry_list = (0..item_count)
                     .map(|n| unsafe { geo.get_unowned_geometry(n) }.try_into())
-                    .collect::<Result<Vec<_>, _>>()?;
+                    .collect::<Result<RVec<_>, _>>()?;
                 Ok(geo_types::Geometry::GeometryCollection(
                     geo_types::GeometryCollection(geometry_list),
                 ))
